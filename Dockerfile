@@ -10,6 +10,7 @@ RUN addgroup -S $USERNAME && adduser -S $USERNAME -G $USERNAME
 
 # Moving to temp for downloads and installations.
 WORKDIR /tmp
+COPY ./malicious_pod.yml /tmp/
 
 # gcompat for Goland errors when installing kubeaudit and others.
 RUN apk update && apk add --no-cache bash wget git python3 curl gcompat sudo jq yq
@@ -47,15 +48,16 @@ RUN mv popeye /usr/bin/
 RUN wget "https://github.com/aquasecurity/trivy/releases/download/v0.33.0/trivy_0.33.0_Linux-64bit.tar.gz"
 RUN tar -xzf trivy_0.33.0_Linux-64bit.tar.gz
 RUN mv trivy /usr/bin/
-RUN rm /tmp/*
 # update trivy's db for the first time: ghcr.io/aquasecurity/trivy-db
-RUN ./trivy filesystem /opt/stuff/
+RUN trivy filesystem /tmp/
 
 # Peirates
 RUN wget https://github.com/inguardians/peirates/releases/download/v1.1.13/peirates-linux-amd64.tar.xz
 RUN xzcat peirates-linux-amd64.tar.xz > peirates-linux-amd64.tar
 RUN tar -xf peirates-linux-amd64.tar
 RUN mv /tmp/peirates-linux-amd64/peirates /usr/bin
+
+# Cleanup
 RUN rm -rf /tmp/*
 
 
