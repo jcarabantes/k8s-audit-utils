@@ -2,7 +2,7 @@
 FROM alpine:3.18.4
 LABEL name=intense-security/k8s-audit-utils
 LABEL maintainer="Intense Security"
-LABEL version="1.1.2"
+LABEL version="1.1.3"
 
 ARG USERNAME=pentester
 RUN addgroup -S $USERNAME && adduser -S $USERNAME -G $USERNAME
@@ -12,7 +12,7 @@ WORKDIR /tmp
 COPY ./malicious_pod.yml /tmp/
 
 # gcompat for Goland errors when installing kubeaudit and others.
-RUN apk update && apk add --no-cache bash wget git python3 curl gcompat sudo jq yq
+RUN apk update && apk add --no-cache bash wget git python3 curl gcompat sudo jq yq nmap net-tools tcpdump openssl nikto
 
 # may the user need root sometimes
 RUN echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME
@@ -40,7 +40,6 @@ RUN chmod +x ./kubeaudit && mv kubeaudit /usr/bin/
 # Kubescape
 RUN curl -s https://raw.githubusercontent.com/kubescape/kubescape/master/install.sh | /bin/bash
 
-
 # POPEYE
 RUN wget "https://github.com/derailed/popeye/releases/download/v0.11.1/popeye_Linux_x86_64.tar.gz"
 RUN tar -xzf popeye_Linux_x86_64.tar.gz
@@ -59,6 +58,12 @@ RUN xzcat peirates-linux-amd64.tar.xz > peirates-linux-amd64.tar
 RUN tar -xf peirates-linux-amd64.tar
 RUN mv /tmp/peirates-linux-amd64/peirates /usr/bin
 
+# Nuclei
+RUN wget "https://github.com/projectdiscovery/nuclei/releases/download/v2.9.15/nuclei_2.9.15_linux_amd64.zip"
+RUN unzip nuclei_2.9.15_linux_amd64.zip 
+RUN mv nuclei /usr/bin/
+RUN nuclei -ut
+
 # Cleanup
 RUN rm -rf /tmp/*
 
@@ -68,6 +73,7 @@ RUN mkdir -p ~/.kube
 RUN echo "alias k=kubectl" >> ~/.bashrc
 
 # Download kubescape configs (default into home's user)
+# Connections to: api.armosec.io and report.armo.cloud (-l debug)
 RUN kubescape download artifacts
 RUN kubescape download framework  AllControls
 
