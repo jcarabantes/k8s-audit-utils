@@ -2,8 +2,7 @@
 FROM alpine:3.18.4
 LABEL name=intense-security/k8s-audit-utils
 LABEL maintainer="Intense Security"
-LABEL version="1.1.1"
-
+LABEL version="1.1.2"
 
 ARG USERNAME=pentester
 RUN addgroup -S $USERNAME && adduser -S $USERNAME -G $USERNAME
@@ -21,16 +20,19 @@ RUN echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME
 # python3 as def
 RUN ln -sf /usr/bin/python3 /usr/bin/python
 
-# kubectl and alias
+# kubectl
 RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-RUN chmod +x ./kubectl && cp kubectl /usr/bin
+RUN chmod +x ./kubectl && mv kubectl /usr/bin
 
+# Openshift 4 oc client
+RUN wget "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux-4.13.13.tar.gz"
+RUN tar -xzf openshift-client-linux-4.13.13.tar.gz
+RUN mv oc /usr/bin
 
 # kubeaudit
 RUN wget "https://github.com/Shopify/kubeaudit/releases/download/v0.22.0/kubeaudit_0.22.0_linux_amd64.tar.gz"
 RUN tar -xzf kubeaudit_0.22.0_linux_amd64.tar.gz
-RUN chmod +x ./kubeaudit && cp kubeaudit /usr/bin/
-RUN rm ./kubeaudit ./kubectl ./kubeaudit_0.22.0_linux_amd64.tar.gz
+RUN chmod +x ./kubeaudit && mv kubeaudit /usr/bin/
 # fix go binaries execution (kubeaudit will fail if this line is not executed)
 # https://stackoverflow.com/a/35613430
 #RUN mkdir /lib64 && ln -s /lib/libc.musl-x86_64.so.1 /lib64/ld-linux-x86-64.so.2
@@ -59,7 +61,6 @@ RUN mv /tmp/peirates-linux-amd64/peirates /usr/bin
 
 # Cleanup
 RUN rm -rf /tmp/*
-
 
 # Switch user
 USER $USERNAME
