@@ -25,7 +25,7 @@ RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/s
 RUN chmod +x ./kubectl && mv kubectl /usr/bin
 
 # Openshift 4 oc client
-RUN wget "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux-4.13.13.tar.gz"
+RUN wget "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.13.13/openshift-client-linux-4.13.13.tar.gz"
 RUN tar -xzf openshift-client-linux-4.13.13.tar.gz
 RUN mv oc /usr/bin
 
